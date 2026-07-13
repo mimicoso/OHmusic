@@ -96,7 +96,11 @@ fun PlaylistScreen(
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         // ── 封面模糊背景 — 用 localBackdrop 捕获，供 GlassTabBar 采样 ──
         Box(
             modifier = Modifier
@@ -115,6 +119,7 @@ fun PlaylistScreen(
                 contentScale = ContentScale.Crop,
                 colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(2.0f) }),
                 alpha = 0.9f,
+                placeholder = painterResource(R.drawable.default_album_art),
                 error = painterResource(R.drawable.default_album_art),
                 fallback = painterResource(R.drawable.default_album_art)
             )

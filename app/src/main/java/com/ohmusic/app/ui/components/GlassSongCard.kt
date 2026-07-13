@@ -87,6 +87,7 @@ fun GlassSongCard(
                     .size(48.dp)
                     .clip(RoundedCornerShape(10.dp)),
                 contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.default_album_art),
                 error = painterResource(R.drawable.default_album_art),
                 fallback = painterResource(R.drawable.default_album_art)
             )

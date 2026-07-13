@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +22,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -29,7 +32,9 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
@@ -71,7 +76,21 @@ class MainActivity : ComponentActivity() {
                 val saveableStateHolder = rememberSaveableStateHolder()
 
                 var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+                var visibleTab by rememberSaveable { mutableIntStateOf(selectedTab) }
+                val composedTabs = remember { mutableStateListOf(selectedTab) }
                 val canReadAudio by hasAudioPermission.collectAsState()
+
+                // Keep a screen composed after its first visit. A newly requested screen is
+                // rendered behind the current one for two frames so its artwork and backdrop
+                // have a valid first frame before it becomes visible.
+                LaunchedEffect(selectedTab) {
+                    if (selectedTab !in composedTabs) {
+                        composedTabs += selectedTab
+                        withFrameNanos { }
+                        withFrameNanos { }
+                    }
+                    visibleTab = selectedTab
+                }
 
                 // 先提交首帧，再请求运行时权限，避免权限窗口阻塞冷启动绘制。
                 LaunchedEffect(Unit) {
@@ -79,21 +98,44 @@ class MainActivity : ComponentActivity() {
                     requestAudioPermission()
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // 仅组合当前页面；SaveableStateHolder 负责恢复页面内部状态。
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .layerBackdrop(backdrop)
                     ) {
-                        saveableStateHolder.SaveableStateProvider(selectedTab) {
-                            when (selectedTab) {
-                                0 -> PlayerScreen(modifier = Modifier.fillMaxSize())
-                                else -> PlaylistScreen(
-                                    hasAudioPermission = canReadAudio,
-                                    onRequestPermission = ::requestAudioPermission,
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                        composedTabs.forEach { tab ->
+                            val isVisible = visibleTab == tab
+                            val isPrewarming = selectedTab == tab && visibleTab != selectedTab
+                            val semanticsModifier = if (isVisible) {
+                                Modifier
+                            } else {
+                                Modifier.clearAndSetSemantics { }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        alpha = if (isVisible || isPrewarming) 1f else 0f
+                                    }
+                                    .zIndex(if (isVisible) 1f else 0f)
+                                    .then(semanticsModifier)
+                            ) {
+                                saveableStateHolder.SaveableStateProvider(tab) {
+                                    when (tab) {
+                                        0 -> PlayerScreen(modifier = Modifier.fillMaxSize())
+                                        else -> PlaylistScreen(
+                                            hasAudioPermission = canReadAudio,
+                                            onRequestPermission = ::requestAudioPermission,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

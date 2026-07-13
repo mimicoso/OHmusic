@@ -158,6 +158,7 @@ fun PlayerScreen(
                     contentScale = ContentScale.Crop,
                     colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(2.0f) }),
                     alpha = 0.9f,
+                    placeholder = painterResource(R.drawable.default_album_art),
                     error = painterResource(R.drawable.default_album_art),
                     fallback = painterResource(R.drawable.default_album_art)
                 )
@@ -346,6 +347,7 @@ private fun AlbumArtCard(
                 contentDescription = song?.title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.default_album_art),
                 error = painterResource(R.drawable.default_album_art),
                 fallback = painterResource(R.drawable.default_album_art)
             )

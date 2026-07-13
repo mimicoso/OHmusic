@@ -5,6 +5,8 @@ semantic versioning after its first public release.
 
 ## Unreleased
 
+- Prevented page-switch flashes by prewarming retained screens and showing
+  default artwork from the first loading frame.
 - Prepared the project for public open-source development.
 - Standardized the product name as OHMusic.
 - Limited local scans to songs longer than two minutes.
