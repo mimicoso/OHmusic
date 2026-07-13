@@ -1,0 +1,44 @@
+# Gradle
+.gradle/
+.gradle-user/
+.android-user/
+.kotlin/
+build/
+**/build/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Local config
+local.properties
+keystore.properties
+secrets.properties
+*.jks
+*.keystore
+*.pem
+*.p12
+*.properties.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+*.apk
+*.aab
+*.dex
+*.class
+
+# Debug
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local tooling / agent context
+.agents/
+.codex/
+.test-tmp/
+CONTEXT.md

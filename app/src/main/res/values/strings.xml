@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">OHMusic</string>
+
+    <string name="tab_player">Now playing</string>
+    <string name="tab_library">Library</string>
+    <string name="library_songs">Songs</string>
+    <string name="library_favorites">Favorites</string>
+    <string name="action_refresh">Refresh library</string>
+    <string name="action_grant_permission">Grant access</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_next">Next</string>
+    <string name="action_restart">Restart</string>
+    <string name="action_favorite">Favorite</string>
+    <string name="action_unfavorite">Remove from favorites</string>
+    <string name="action_change_play_mode">Playback mode: %1$s</string>
+
+    <string name="play_mode_sequence">Sequential</string>
+    <string name="play_mode_repeat_one">Repeat one</string>
+    <string name="play_mode_shuffle">Shuffle</string>
+
+    <string name="status_scanning">Scanning local music…</string>
+    <string name="status_now_playing">Now playing</string>
+    <string name="status_not_playing">Nothing playing</string>
+    <string name="empty_favorites">No favorite songs yet</string>
+    <string name="empty_music">No local music longer than two minutes was found</string>
+    <string name="audio_permission_required">Music access is required to read local songs</string>
+    <string name="scan_failed">Unable to refresh local music</string>
+
+    <string name="unknown_title">Unknown</string>
+    <string name="unknown_artist">Unknown artist</string>
+    <string name="unknown_album">Unknown album</string>
+
+    <plurals name="song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+</resources>

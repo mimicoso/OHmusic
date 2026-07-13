@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_player">正在播放</string>
+    <string name="tab_library">音乐库</string>
+    <string name="library_songs">歌单</string>
+    <string name="library_favorites">收藏</string>
+    <string name="action_refresh">刷新音乐库</string>
+    <string name="action_grant_permission">授予权限</string>
+    <string name="action_previous">上一曲</string>
+    <string name="action_play">播放</string>
+    <string name="action_pause">暂停</string>
+    <string name="action_next">下一曲</string>
+    <string name="action_restart">从头播放</string>
+    <string name="action_favorite">收藏</string>
+    <string name="action_unfavorite">取消收藏</string>
+    <string name="action_change_play_mode">播放模式：%1$s</string>
+
+    <string name="play_mode_sequence">顺序播放</string>
+    <string name="play_mode_repeat_one">单曲循环</string>
+    <string name="play_mode_shuffle">随机播放</string>
+
+    <string name="status_scanning">正在扫描本地音乐…</string>
+    <string name="status_now_playing">正在播放</string>
+    <string name="status_not_playing">未在播放</string>
+    <string name="empty_favorites">还没有收藏歌曲</string>
+    <string name="empty_music">未发现超过两分钟的本地音乐</string>
+    <string name="audio_permission_required">需要音乐访问权限才能读取本地歌曲</string>
+    <string name="scan_failed">刷新本地音乐失败</string>
+
+    <string name="unknown_title">未知</string>
+    <string name="unknown_artist">未知歌手</string>
+    <string name="unknown_album">未知专辑</string>
+
+    <plurals name="song_count">
+        <item quantity="other">%1$d 首歌曲</item>
+    </plurals>
+</resources>
