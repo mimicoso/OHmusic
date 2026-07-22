@@ -3,6 +3,7 @@ package com.ohmusic.app.data.repository
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
+import android.util.Log
 import com.ohmusic.app.R
 import com.ohmusic.app.data.dao.SongDao
 import com.ohmusic.app.data.model.Song
@@ -34,9 +35,30 @@ class MusicRepository @Inject constructor(
 
     fun getSongByIdFlow(id: Long): Flow<Song?> = songDao.getSongByIdFlow(id)
 
+    /** 获取排除的文件夹列表 */
+    private fun getExcludedFolders(): Set<String> {
+        val prefs = context.getSharedPreferences("ohmusic_prefs", Context.MODE_PRIVATE)
+        val saved = prefs.getString("excluded_folders", "")
+        return if (saved.isNullOrEmpty()) {
+            emptySet()
+        } else {
+            saved.split("||").filter { it.isNotEmpty() }.toSet()
+        }
+    }
+
+    /** 检查文件路径是否在排除文件夹中 */
+    private fun isPathExcluded(path: String?, excludedFolders: Set<String>): Boolean {
+        if (path.isNullOrEmpty()) return false
+        return excludedFolders.any { folder ->
+            path.contains(folder, ignoreCase = true)
+        }
+    }
+
     /** 扫描设备本地音乐文件 */
     suspend fun scanLocalMusic(): Int = withContext(Dispatchers.IO) {
         val songs = mutableListOf<Song>()
+        val excludedFolders = getExcludedFolders()
+        Log.d("MusicRepository", "Excluded folders: $excludedFolders")
 
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -45,7 +67,8 @@ class MusicRepository @Inject constructor(
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DATE_ADDED
+            MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.DATA
         )
 
         val selection = buildString {
@@ -69,8 +92,14 @@ class MusicRepository @Inject constructor(
             val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
 
             while (cursor.moveToNext()) {
+                val path = cursor.getString(dataCol)
+                if (isPathExcluded(path, excludedFolders)) {
+                    continue
+                }
+
                 val id = cursor.getLong(idCol)
                 val contentUri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id

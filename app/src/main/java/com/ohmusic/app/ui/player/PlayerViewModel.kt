@@ -1,12 +1,19 @@
 package com.ohmusic.app.ui.player
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ohmusic.app.data.model.Song
 import com.ohmusic.app.data.repository.MusicRepository
 import com.ohmusic.app.player.MusicPlayerManager
 import com.ohmusic.app.player.PlayMode
+import com.ohmusic.app.util.LyricLine
+import com.ohmusic.app.util.LyricParser
+
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -21,14 +28,18 @@ data class PlayerUiState(
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
     val playMode: PlayMode = PlayMode.SEQUENCE,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val lyrics: List<LyricLine> = emptyList()
 )
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val playerManager: MusicPlayerManager,
     private val repository: MusicRepository
 ) : ViewModel() {
+
+    private val _lyrics = MutableStateFlow<List<LyricLine>>(emptyList())
 
     private data class PlaybackState(
         val song: Song?,
@@ -59,8 +70,9 @@ class PlayerViewModel @Inject constructor(
     val uiState: StateFlow<PlayerUiState> = combine(
         playbackState,
         playerManager.playMode,
-        favoriteState
-    ) { playback, playMode, isFavorite ->
+        favoriteState,
+        _lyrics
+    ) { playback, playMode, isFavorite, lyrics ->
         PlayerUiState(
             currentSong = playback.song,
             isPlaying = playback.playing,
@@ -68,13 +80,23 @@ class PlayerViewModel @Inject constructor(
             currentPosition = playback.position,
             duration = playback.duration,
             playMode = playMode,
-            isFavorite = isFavorite
+            isFavorite = isFavorite,
+            lyrics = lyrics
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = PlayerUiState()
     )
+
+    fun loadLyrics(song: Song) {
+        viewModelScope.launch {
+            Log.d("PlayerViewModel", "Loading lyrics for song: ${song.title}, uri: ${song.uri}")
+            val lyrics = LyricParser.parseFromFilePath(context, song.uri)
+            Log.d("PlayerViewModel", "Loaded ${lyrics.size} lyric lines")
+            _lyrics.value = lyrics
+        }
+    }
 
     fun connect() = playerManager.connect()
     fun togglePlay() = playerManager.togglePlay()

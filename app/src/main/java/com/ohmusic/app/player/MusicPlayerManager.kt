@@ -164,10 +164,12 @@ class MusicPlayerManager @Inject constructor(
     }
 
     fun previous() = withController { player ->
-        if (player.currentPosition > PREVIOUS_RESTART_THRESHOLD_MS) {
-            player.seekTo(0)
-        } else if (player.hasPreviousMediaItem()) {
-            player.seekToPreviousMediaItem()
+        if (player.hasPreviousMediaItem()) {
+            if (player.isPlaying && player.currentPosition > PREVIOUS_RESTART_THRESHOLD_MS) {
+                player.seekTo(0)
+            } else {
+                player.seekToPreviousMediaItem()
+            }
         } else if (player.mediaItemCount > 0 && _playMode.value == PlayMode.SEQUENCE) {
             player.seekToDefaultPosition(player.mediaItemCount - 1)
         }

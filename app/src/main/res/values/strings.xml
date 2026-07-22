@@ -16,6 +16,13 @@
     <string name="action_favorite">Favorite</string>
     <string name="action_unfavorite">Remove from favorites</string>
     <string name="action_change_play_mode">Playback mode: %1$s</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_folder_filter">Folder Filter</string>
+    <string name="settings_add_folder">Add Folder</string>
+    <string name="settings_remove_folder">Remove</string>
+    <string name="settings_no_folders">No folders excluded</string>
+    <string name="settings_save">Save</string>
 
     <string name="play_mode_sequence">Sequential</string>
     <string name="play_mode_repeat_one">Repeat one</string>

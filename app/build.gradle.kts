@@ -53,10 +53,35 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (hasReleaseSigning) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += listOf(
+                "**/*.md",
+                "**/*.txt",
+                "**/*.json",
+                "**/LICENSE.txt",
+                "**/NOTICE.txt",
+                "**/CHANGELOG.txt",
+                "META-INF/*.kotlin_module",
+                "META-INF/*.version",
+                "META-INF/proguard/*",
+                "META-INF/services/*"
+            )
+        }
+        jniLibs {
+            excludes += listOf(
+                "lib/armeabi-v7a/libwebp.so",
+                "lib/arm64-v8a/libwebp.so",
+                "lib/x86/libwebp.so",
+                "lib/x86_64/libwebp.so"
+            )
         }
     }
 

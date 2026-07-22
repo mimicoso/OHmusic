@@ -25,15 +25,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -43,6 +53,7 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import android.content.Context
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -88,6 +99,7 @@ fun PlaylistScreen(
     // HorizontalPager 状态
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
+    var showSettings by rememberSaveable { mutableStateOf(false) }
 
     // 每个进程首次进入音乐库时同步一次 MediaStore。
     LaunchedEffect(hasAudioPermission) {
@@ -161,6 +173,36 @@ fun PlaylistScreen(
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                // 设置按钮 — 圆形液态玻璃容器
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .drawBackdrop(
+                            backdrop = localBackdrop,
+                            shape = { CircleShape },
+                            effects = {
+                                blur(4f.dp.toPx())
+                            },
+                            onDrawSurface = { drawRect(Color.White.copy(alpha = 0.15f)) }
+                        )
+                        .clickable(
+                            interactionSource = null,
+                            indication = null
+                        ) {
+                            showSettings = true
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.action_settings),
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
 
                 // 刷新按钮 — 圆形液态玻璃容器
                 Box(
@@ -296,5 +338,88 @@ fun PlaylistScreen(
                 }
             }
         }
+    }
+
+    if (showSettings) {
+        val prefs = context.getSharedPreferences("ohmusic_prefs", Context.MODE_PRIVATE)
+        val excludedFolders = remember { mutableStateListOf<String>() }
+        var newFolder by remember { mutableStateOf("") }
+
+        LaunchedEffect(Unit) {
+            val saved = prefs.getString("excluded_folders", "") ?: ""
+            if (saved.isNotEmpty()) {
+                excludedFolders.addAll(saved.split("||"))
+            }
+        }
+
+        AlertDialog(
+            onDismissRequest = { showSettings = false },
+            title = { Text("设置") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text("文件夹过滤")
+                    TextField(
+                        value = newFolder,
+                        onValueChange = { newFolder = it },
+                        label = { Text("添加排除文件夹") },
+                        placeholder = { Text("例如：Download") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (excludedFolders.isNotEmpty()) {
+                        Column {
+                            excludedFolders.forEachIndexed { index, folder ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(folder)
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    IconButton(
+                                        onClick = {
+                                            excludedFolders.removeAt(index)
+                                            prefs.edit()
+                                                .putString("excluded_folders", excludedFolders.joinToString("||"))
+                                                .apply()
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "删除",
+                                            tint = Color.Red
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (newFolder.isNotEmpty()) {
+                            excludedFolders.add(newFolder)
+                            prefs.edit()
+                                .putString("excluded_folders", excludedFolders.joinToString("||"))
+                                .apply()
+                            newFolder = ""
+                        }
+                        showSettings = false
+                    }
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showSettings = false }
+                ) {
+                    Text("取消")
+                }
+            }
+        )
     }
 }

@@ -4,9 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -14,7 +11,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -73,37 +69,17 @@ class InteractiveHighlight(
     }
 
     /** 手势捕获 — hasOwnGesture=false 时为空（配合 DampedDragAnimation） */
-    val gestureModifier: Modifier = if (hasOwnGesture) {
-        Modifier.pointerInput(animationScope) {
-            awaitPointerEventScope {
-                while (true) {
-                    // 立即检测按下，无延迟
-                    val down = awaitFirstDown()
-                    startPosition = down.position
-                    animationScope.launch {
-                        positionAnimation.snapTo(startPosition)
-                        pressProgressAnimation.animateTo(1f, pressDownSpec)
-                    }
+    val gestureModifier: Modifier = Modifier
 
-                    // 跟踪手指位置
-                    do {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull()
-                        if (change != null && change.pressed) {
-                            animationScope.launch {
-                                positionAnimation.snapTo(change.position)
-                            }
-                            change.consume()
-                        }
-                    } while (change != null && change.pressed)
-
-                    // 松手，回弹
-                    animationScope.launch {
-                        launch { pressProgressAnimation.animateTo(0f, releaseSpec) }
-                        launch { positionAnimation.animateTo(startPosition, positionBounceSpec) }
-                    }
-                }
-            }
+    fun press() {
+        animationScope.launch {
+            pressProgressAnimation.snapTo(1f)
         }
-    } else Modifier
+    }
+
+    fun release() {
+        animationScope.launch {
+            pressProgressAnimation.animateTo(0f, releaseSpec)
+        }
+    }
 }
